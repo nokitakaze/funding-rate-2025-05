@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Prices & Funding</title>
+  <script src="https://code.highcharts.com/stock/highstock.js"></script>
+  <script src="https://code.highcharts.com/stock/highcharts-more.js"></script>
+  <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+</head>
+<body>
+  <div id="graph" style="height:600px;min-width:310px"></div>
+
+  <script type="module">
+    async function load(path) {
+      const r = await fetch(path);
+      if (!r.ok) throw new Error(`Не удалось загрузить ${path}`);
+      return r.json();
+    }
+
+    function toSeries(arr, i) {
+      return arr.map(d => [d[0] * 1000, d[i] ?? null]);
+    }
+
+    async function draw() {
+      const [btc, eth, sol] = await Promise.all([
+        load('data-BTC.json'),
+        load('data-ETH.json'),
+        load('data-SOL.json')
+      ]);
+
+      const s = [
+        { name: 'BTC Price',   data: toSeries(btc, 1), yAxis: 1, connectNulls: true, tooltip: { valueDecimals: 2 } },
+        { name: 'ETH Price',   data: toSeries(eth, 1), yAxis: 1, connectNulls: true, tooltip: { valueDecimals: 2 } },
+        { name: 'SOL Price',   data: toSeries(sol, 1), yAxis: 1, connectNulls: true, tooltip: { valueDecimals: 2 } },
+
+        { name: 'BTC Funding Binance', data: toSeries(btc, 2), yAxis: 0, connectNulls: true, tooltip: { valueDecimals: 6 } },
+        { name: 'BTC Funding Bybit',   data: toSeries(btc, 3), yAxis: 0, connectNulls: true, tooltip: { valueDecimals: 6 } },
+        { name: 'ETH Funding Binance', data: toSeries(eth, 2), yAxis: 0, connectNulls: true, tooltip: { valueDecimals: 6 } },
+        { name: 'ETH Funding Bybit',   data: toSeries(eth, 3), yAxis: 0, connectNulls: true, tooltip: { valueDecimals: 6 } },
+        { name: 'SOL Funding Binance', data: toSeries(sol, 2), yAxis: 0, connectNulls: true, tooltip: { valueDecimals: 6 } },
+        { name: 'SOL Funding Bybit',   data: toSeries(sol, 3), yAxis: 0, connectNulls: true, tooltip: { valueDecimals: 6 } }
+      ];
+
+      Highcharts.stockChart('graph', {
+        rangeSelector: { selected: 1 },
+        title: { text: 'Цены и ставки фандинга' },
+        yAxis: [{
+          title: { text: 'Funding (abs)' },
+          labels: { format: '{value:.4f}' }
+        }, {
+          title: { text: 'Price, USD' },
+          opposite: true,
+          labels: { format: '{value:.2f}' }
+        }],
+        tooltip: { shared: true },
+        series: s
+      });
+    }
+
+    draw().catch(console.error);
+  </script>
+</body>
+</html>
