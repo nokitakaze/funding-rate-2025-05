@@ -29,7 +29,8 @@
         .map(d => [d[0] * 1000, d[i] ?? null])
         .filter(d => d[1] !== null);
     const toSeriesFunding = (a, i) => a
-        .map(d => [d[0] * 1000, d[i] != null ? d[i] * 100 : null]);
+        .map(d => [d[0] * 1000, d[i] != null ? d[i] * 100 : null])
+        .filter(d => d[1] !== null);
 
     (async () => {
         const [btc, eth, sol] = await Promise.all(['data-BTC.json', 'data-ETH.json', 'data-SOL.json'].map(load));
