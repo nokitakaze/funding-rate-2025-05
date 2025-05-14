@@ -190,9 +190,9 @@
 
         /**
          * Добавить SMA‑серии и удалить предыдущие.
-         * @param {number} period Период SMA
+         * @param {number} periodDay Период SMA
          */
-        function addSMA(period) {
+        function addSMA(periodDay) {
             // Удаляем все ранее добавленные SMA
             chart.series.slice().forEach(s => {
                 if (s.userOptions && s.userOptions.isSMA) {
@@ -203,9 +203,9 @@
             // Добавляем новые SMA для каждой funding‑серии
             chart.series.forEach(s => {
                 if (s.userOptions && s.userOptions.isFunding) {
-                    const smaData = calculateSMA(s.options.data, period);
+                    const smaData = calculateSMA(s.options.data, periodDay * 3);
                     chart.addSeries({
-                        name: `${s.name} ${period}d SMA`,
+                        name: `${s.name} ${periodDay}d SMA`,
                         data: smaData,
                         yAxis: 0,
                         color: s.color,
