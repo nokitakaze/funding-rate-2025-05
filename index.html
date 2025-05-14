@@ -11,10 +11,24 @@
             height: 90vh;
             min-width: 310px;
         }
+        #buttons {
+            margin-top: 8px;
+            font-family: sans-serif;
+        }
+        #buttons input,
+        #buttons button {
+            margin-left: 4px;
+            padding: 4px 8px;
+        }
     </style>
 </head>
 <body>
 <div id="graph"></div>
+<div id="buttons">
+    <label for="smaPeriod">Период SMA (дней):</label>
+    <input type="number" id="smaPeriod" min="2" max="365" step="1" value="30">
+    <button id="addSmaBtn">Добавить SMA</button>
+</div>
 
 <script type="module">
     async function load(p) {
@@ -32,10 +46,23 @@
         .map(d => [d[0] * 1000, d[i] != null ? d[i] * 100 : null])
         .filter(d => d[1] !== null);
 
-    (async () => {
-        const [btc, eth, sol] = await Promise.all(['data-BTC.json', 'data-ETH.json', 'data-SOL.json'].map(load));
+    const fundingColors = {
+        'BTC Funding Binance': '#1f77b4',
+        'BTC Funding Bybit': '#ff7f0e',
+        'ETH Funding Binance': '#2ca02c',
+        'ETH Funding Bybit': '#d62728',
+        'SOL Funding Binance': '#9467bd',
+        'SOL Funding Bybit': '#8c564b'
+    };
 
-        Highcharts.stockChart('graph', {
+    (async () => {
+        const [btc, eth, sol] = await Promise.all([
+            'data-BTC.json',
+            'data-ETH.json',
+            'data-SOL.json'
+        ].map(load));
+
+        const chart = Highcharts.stockChart('graph', {
             rangeSelector: {selected: 1},
             title: {text: 'Цены и ставки фандинга'},
             legend: {enabled: true},
@@ -49,35 +76,155 @@
             }],
             tooltip: {shared: true},
             series: [
-                {name: 'BTC Price', data: toSeriesPrice(btc, 1), yAxis: 1, connectNulls: true, tooltip: {valueDecimals: 2}},
-                {name: 'ETH Price', data: toSeriesPrice(eth, 1), yAxis: 1, connectNulls: true, tooltip: {valueDecimals: 2}},
-                {name: 'SOL Price', data: toSeriesPrice(sol, 1), yAxis: 1, connectNulls: true, tooltip: {valueDecimals: 2}},
+                {
+                    name: 'BTC Price',
+                    data: toSeriesPrice(btc, 1),
+                    yAxis: 1,
+                    connectNulls: true,
+                    tooltip: {valueDecimals: 2}
+                },
+                {
+                    name: 'ETH Price',
+                    data: toSeriesPrice(eth, 1),
+                    yAxis: 1,
+                    connectNulls: true,
+                    tooltip: {valueDecimals: 2}
+                },
+                {
+                    name: 'SOL Price',
+                    data: toSeriesPrice(sol, 1),
+                    yAxis: 1,
+                    connectNulls: true,
+                    tooltip: {valueDecimals: 2}
+                },
 
                 {
-                    name: 'BTC Funding Binance', data: toSeriesFunding(btc, 2), yAxis: 0, connectNulls: true,
-                    tooltip: {valueDecimals: 4, valueSuffix: '%'}
+                    name: 'BTC Funding Binance',
+                    id: 'btcFundingBinance',
+                    data: toSeriesFunding(btc, 2),
+                    yAxis: 0,
+                    connectNulls: true,
+                    tooltip: {valueDecimals: 4, valueSuffix: '%'},
+                    color: fundingColors['BTC Funding Binance'],
+                    isFunding: true
                 },
                 {
-                    name: 'BTC Funding Bybit', data: toSeriesFunding(btc, 3), yAxis: 0, connectNulls: true,
-                    tooltip: {valueDecimals: 4, valueSuffix: '%'}
+                    name: 'BTC Funding Bybit',
+                    id: 'btcFundingBybit',
+                    data: toSeriesFunding(btc, 3),
+                    yAxis: 0,
+                    connectNulls: true,
+                    tooltip: {valueDecimals: 4, valueSuffix: '%'},
+                    color: fundingColors['BTC Funding Bybit'],
+                    isFunding: true
                 },
                 {
-                    name: 'ETH Funding Binance', data: toSeriesFunding(eth, 2), yAxis: 0, connectNulls: true,
-                    tooltip: {valueDecimals: 4, valueSuffix: '%'}
+                    name: 'ETH Funding Binance',
+                    id: 'ethFundingBinance',
+                    data: toSeriesFunding(eth, 2),
+                    yAxis: 0,
+                    connectNulls: true,
+                    tooltip: {valueDecimals: 4, valueSuffix: '%'},
+                    color: fundingColors['ETH Funding Binance'],
+                    isFunding: true
                 },
                 {
-                    name: 'ETH Funding Bybit', data: toSeriesFunding(eth, 3), yAxis: 0, connectNulls: true,
-                    tooltip: {valueDecimals: 4, valueSuffix: '%'}
+                    name: 'ETH Funding Bybit',
+                    id: 'ethFundingBybit',
+                    data: toSeriesFunding(eth, 3),
+                    yAxis: 0,
+                    connectNulls: true,
+                    tooltip: {valueDecimals: 4, valueSuffix: '%'},
+                    color: fundingColors['ETH Funding Bybit'],
+                    isFunding: true
                 },
                 {
-                    name: 'SOL Funding Binance', data: toSeriesFunding(sol, 2), yAxis: 0, connectNulls: true,
-                    tooltip: {valueDecimals: 4, valueSuffix: '%'}
+                    name: 'SOL Funding Binance',
+                    id: 'solFundingBinance',
+                    data: toSeriesFunding(sol, 2),
+                    yAxis: 0,
+                    connectNulls: true,
+                    tooltip: {valueDecimals: 4, valueSuffix: '%'},
+                    color: fundingColors['SOL Funding Binance'],
+                    isFunding: true
                 },
                 {
-                    name: 'SOL Funding Bybit', data: toSeriesFunding(sol, 3), yAxis: 0, connectNulls: true,
-                    tooltip: {valueDecimals: 4, valueSuffix: '%'}
+                    name: 'SOL Funding Bybit',
+                    id: 'solFundingBybit',
+                    data: toSeriesFunding(sol, 3),
+                    yAxis: 0,
+                    connectNulls: true,
+                    tooltip: {valueDecimals: 4, valueSuffix: '%'},
+                    color: fundingColors['SOL Funding Bybit'],
+                    isFunding: true
                 }
             ]
+        });
+
+        /**
+         * Рассчитать простую скользящую среднюю.
+         * @param {Array<[number, number]>} data Данные исходной серии в формате [timestamp, value]
+         * @param {number} period Период SMA
+         * @return {Array<[number, number]>}
+         */
+        function calculateSMA(data, period) {
+            const res = [];
+            const window = [];
+            let sum = 0;
+
+            for (let i = 0; i < data.length; i++) {
+                const [ts, v] = data[i];
+                sum += v;
+                window.push(v);
+
+                if (window.length > period) {
+                    sum -= window.shift();
+                }
+
+                if (window.length === period) {
+                    res.push([ts, sum / period]);
+                }
+            }
+            return res;
+        }
+
+        /**
+         * Добавить SMA‑серии и удалить предыдущие.
+         * @param {number} period Период SMA
+         */
+        function addSMA(period) {
+            // Удаляем все ранее добавленные SMA
+            chart.series.slice().forEach(s => {
+                if (s.userOptions && s.userOptions.isSMA) {
+                    s.remove(false);
+                }
+            });
+
+            // Добавляем новые SMA для каждой funding‑серии
+            chart.series.forEach(s => {
+                if (s.userOptions && s.userOptions.isFunding) {
+                    const smaData = calculateSMA(s.options.data, period);
+                    chart.addSeries({
+                        name: `${s.name} ${period}d SMA`,
+                        data: smaData,
+                        yAxis: 0,
+                        color: s.color,
+                        dashStyle: 'Dash',
+                        isSMA: true,
+                        tooltip: {valueDecimals: 4, valueSuffix: '%'}
+                    }, false);
+                }
+            });
+            chart.redraw();
+        }
+
+        document.getElementById('addSmaBtn').addEventListener('click', () => {
+            const period = parseInt(document.getElementById('smaPeriod').value, 10);
+            if (Number.isNaN(period) || period < 2 || period > 365) {
+                alert('Период SMA должен быть целым числом от 2 до 365.');
+                return;
+            }
+            addSMA(period);
         });
     })().catch(console.error);
 </script>
